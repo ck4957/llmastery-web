@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User, Provider } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
 interface AuthContextProps {
@@ -10,7 +10,9 @@ interface AuthContextProps {
   loading: boolean;
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithSocial: (provider: Provider) => Promise<void>;
   signOut: () => Promise<void>;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -54,9 +56,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signInWithPassword({ email, password });
   };
 
+  // New method for social login
+  const signInWithSocial = async (provider: Provider) => {
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    });
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
+
+  const isAuthenticated = !!user;
 
   const value = {
     user,
@@ -64,7 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     signUp,
     signIn,
-    signOut
+    signInWithSocial,
+    signOut,
+    isAuthenticated
   };
 
   return (

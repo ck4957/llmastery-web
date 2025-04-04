@@ -93,8 +93,22 @@ const DashboardPage = () => {
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">LLMastery</span>
+            <Link href="/" className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">LLMastery</Link>
           </div>
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/dashboard" className="text-gray-900 dark:text-white font-medium hover:text-indigo-600 dark:hover:text-indigo-400">
+              Dashboard
+            </Link>
+            <Link href="/community" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              Community
+            </Link>
+            <Link href="/pricing" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              Pricing
+            </Link>
+            <Link href="/profile" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              Profile
+            </Link>
+          </nav>
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => signOut()}

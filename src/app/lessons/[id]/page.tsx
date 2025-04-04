@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
-import { getLesson } from '@/lib/supabase';
+import { getLesson, startLesson, completeLesson } from '@/lib/supabase';
 
 // Component interfaces
 interface LessonData {

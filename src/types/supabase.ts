@@ -488,6 +488,35 @@ export interface LessonProgress {
   updated_at: string;
 }
 
+export interface PricingPlan {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  interval: string;
+  features: string[];
+  is_active: boolean;
+  stripe_product_id: string | null;
+  stripe_price_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserSubscription {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
+  current_period_start: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  stripe_subscription_id: string | null;
+  created_at: string;
+  updated_at: string;
+  plan?: PricingPlan;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -525,6 +554,16 @@ export interface Database {
         Row: LessonProgress;
         Insert: Omit<LessonProgress, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<LessonProgress, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      pricing_plans: {
+        Row: PricingPlan;
+        Insert: Omit<PricingPlan, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<PricingPlan, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      user_subscriptions: {
+        Row: UserSubscription;
+        Insert: Omit<UserSubscription, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<UserSubscription, 'id' | 'created_at' | 'updated_at'>>;
       };
     };
     Views: {};

@@ -138,6 +138,25 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
   return data as UserProfile;
 }
 
+// Subscription functions
+export async function getUserSubscription(userId: string): Promise<any | null> {
+  const { data, error } = await supabase
+    .from('user_subscriptions')
+    .select(`
+      *,
+      plan:plan_id (*)
+    `)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error(`Error fetching subscription for user ${userId}:`, error);
+    return null;
+  }
+
+  return data;
+}
+
 // Badges functions
 export async function getUserBadges(userId: string): Promise<UserBadge[]> {
   const { data, error } = await supabase
@@ -188,6 +207,174 @@ export async function getUserLessonProgress(userId: string): Promise<LessonProgr
   }
 
   return data as LessonProgress[];
+}
+
+export async function startLesson(userId: string, lessonId: string): Promise<boolean> {
+  try {
+    // Check if user has already started this lesson
+    const { data: existingProgress, error: fetchError } = await supabase
+      .from('user_lesson_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .single();
+      
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 means no rows returned
+      console.error(`Error checking existing progress for lesson ${lessonId}:`, fetchError);
+      return false;
+    }
+    
+    const now = new Date().toISOString();
+    
+    if (existingProgress) {
+      // Update existing progress entry if not completed
+      if (!existingProgress.completed_at) {
+        const { error: updateError } = await supabase
+          .from('user_lesson_progress')
+          .update({ 
+            last_accessed_at: now,
+            updated_at: now
+          })
+          .eq('id', existingProgress.id);
+          
+        if (updateError) {
+          console.error(`Error updating lesson progress for ${lessonId}:`, updateError);
+          return false;
+        }
+      }
+    } else {
+      // Create new progress entry
+      const { error: insertError } = await supabase
+        .from('user_lesson_progress')
+        .insert({
+          user_id: userId,
+          lesson_id: lessonId,
+          started_at: now,
+          last_accessed_at: now,
+          status: 'in_progress',
+          created_at: now,
+          updated_at: now
+        });
+        
+      if (insertError) {
+        console.error(`Error creating lesson progress for ${lessonId}:`, insertError);
+        return false;
+      }
+    }
+    
+    // Update user's last activity date for streak calculation
+    await updateUserStreak(userId);
+    
+    return true;
+  } catch (error) {
+    console.error(`Unexpected error in startLesson for ${lessonId}:`, error);
+    return false;
+  }
+}
+
+export async function completeLesson(
+  userId: string, 
+  lessonId: string, 
+  quizScore: number | null = 1, 
+  challengeCompleted: boolean = false
+): Promise<boolean> {
+  try {
+    // Get lesson data to calculate points
+    const { data: lessonData, error: lessonError } = await supabase
+      .from('lessons')
+      .select('points, xp_reward')
+      .eq('id', lessonId)
+      .single();
+      
+    if (lessonError) {
+      console.error(`Error fetching lesson ${lessonId} data:`, lessonError);
+      return false;
+    }
+    
+    const now = new Date().toISOString();
+    const earnedPoints = Math.round((lessonData.points || 0) * (quizScore || 1));
+    const earnedXP = lessonData.xp_reward || 0;
+    
+    // Update or create lesson progress record
+    const { data: existingProgress, error: fetchError } = await supabase
+      .from('user_lesson_progress')
+      .select('id, completed_at')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .single();
+      
+    let progressId;
+    
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error(`Error checking existing progress for lesson ${lessonId}:`, fetchError);
+      return false;
+    }
+    
+    if (existingProgress) {
+      // Skip if already completed
+      if (existingProgress.completed_at) {
+        return true;
+      }
+      
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('user_lesson_progress')
+        .update({ 
+          completed_at: now,
+          quiz_score: quizScore,
+          challenge_completed: challengeCompleted,
+          earned_points: earnedPoints,
+          earned_xp: earnedXP,
+          status: 'completed',
+          updated_at: now
+        })
+        .eq('id', existingProgress.id);
+        
+      if (updateError) {
+        console.error(`Error updating lesson progress for ${lessonId}:`, updateError);
+        return false;
+      }
+      
+      progressId = existingProgress.id;
+    } else {
+      // Create new completed progress entry
+      const { data: newProgress, error: insertError } = await supabase
+        .from('user_lesson_progress')
+        .insert({
+          user_id: userId,
+          lesson_id: lessonId,
+          started_at: now,
+          last_accessed_at: now,
+          completed_at: now,
+          quiz_score: quizScore,
+          challenge_completed: challengeCompleted,
+          earned_points: earnedPoints,
+          earned_xp: earnedXP,
+          status: 'completed',
+          created_at: now,
+          updated_at: now
+        })
+        .select('id');
+        
+      if (insertError || !newProgress) {
+        console.error(`Error creating lesson progress for ${lessonId}:`, insertError);
+        return false;
+      }
+      
+      progressId = newProgress[0].id;
+    }
+    
+    // Add points to user's profile
+    await addPointsToUser(userId, earnedPoints + earnedXP);
+    
+    // Update user's streak
+    await updateUserStreak(userId);
+    
+    return true;
+  } catch (error) {
+    console.error(`Unexpected error in completeLesson for ${lessonId}:`, error);
+    return false;
+  }
 }
 
 export async function updateLessonProgress(
@@ -307,6 +494,109 @@ export async function updateUserStreak(userId: string): Promise<UserProfile | nu
     streak: newStreak,
     streak_last_updated: now.toISOString()
   });
+}
+
+// Helper functions for user points and streak management
+
+/**
+ * Add points to a user's profile
+ */
+export async function addPointsToUser(userId: string, points: number): Promise<boolean> {
+  if (!points) return true; // Skip if no points to add
+  
+  // Get current user data first
+  const { data: userData, error: fetchError } = await supabase
+    .from('profiles')
+    .select('points')
+    .eq('id', userId)
+    .single();
+    
+  if (fetchError) {
+    console.error(`Error fetching user ${userId} data:`, fetchError);
+    return false;
+  }
+  
+  // Calculate new points total
+  const currentPoints = userData?.points || 0;
+  const newTotal = currentPoints + points;
+  
+  // Update the points in the profile
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ 
+      points: newTotal,
+      updated_at: new Date().toISOString() 
+    })
+    .eq('id', userId);
+    
+  if (updateError) {
+    console.error(`Error updating points for user ${userId}:`, updateError);
+    return false;
+  }
+  
+  return true;
+}
+
+/**
+ * Update user's learning streak
+ */
+export async function updateUserStreak(userId: string): Promise<boolean> {
+  // Get current user streak data
+  const { data: userData, error: fetchError } = await supabase
+    .from('profiles')
+    .select('streak, last_activity_date')
+    .eq('id', userId)
+    .single();
+    
+  if (fetchError) {
+    console.error(`Error fetching streak data for user ${userId}:`, fetchError);
+    return false;
+  }
+  
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const lastActivity = userData?.last_activity_date 
+    ? userData.last_activity_date.split('T')[0]
+    : null;
+    
+  let newStreak = userData?.streak || 0;
+  
+  // Calculate if we should increment streak
+  if (!lastActivity) {
+    // First activity
+    newStreak = 1;
+  } else if (lastActivity === today) {
+    // Already counted for today, no change
+  } else {
+    // Check if yesterday or continuous streak
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    if (lastActivity === yesterdayStr) {
+      // Continuous streak
+      newStreak += 1;
+    } else {
+      // Streak broken, start new
+      newStreak = 1;
+    }
+  }
+  
+  // Update the streak in the profile
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ 
+      streak: newStreak,
+      last_activity_date: new Date().toISOString(),
+      updated_at: new Date().toISOString() 
+    })
+    .eq('id', userId);
+    
+  if (updateError) {
+    console.error(`Error updating streak for user ${userId}:`, updateError);
+    return false;
+  }
+  
+  return true;
 }
 
 // Export common types from Supabase

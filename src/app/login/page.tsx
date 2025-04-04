@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import SocialLogin from '@/components/shared/SocialLogin';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -104,10 +105,15 @@ export default function Login() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+        
+        {/* Social Login Component */}
+        <div className="mt-6">
+          <SocialLogin setAuthError={setError} />
+        </div>
 
         <div className="mt-6 text-center text-sm">
           <p className="text-gray-600 dark:text-gray-400">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-indigo-600 dark:text-indigo-400 hover:underline">
               Sign up
             </Link>

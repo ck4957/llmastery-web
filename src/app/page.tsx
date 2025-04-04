@@ -4,6 +4,40 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-950">
+      {/* Navigation Header */}
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <div className="flex items-center">
+            <Link href="/" className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">LLMastery</Link>
+          </div>
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/about" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              About
+            </Link>
+            <Link href="/community" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              Community
+            </Link>
+            <Link href="/pricing" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              Pricing
+            </Link>
+            <Link href="/contact" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              Contact
+            </Link>
+          </nav>
+          <div className="flex items-center space-x-4">
+            <Link href="/login" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+              Log in
+            </Link>
+            <Link 
+              href="/signup"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2 transition-colors"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+      </header>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
@@ -119,18 +153,24 @@ export default function Home() {
               <p className="text-gray-600 dark:text-gray-400">&copy; 2025 LLMastery. All rights reserved.</p>
             </div>
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+              <Link href="/about" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
                 About
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+              </Link>
+              <Link href="/privacy" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
                 Privacy
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+              </Link>
+              <Link href="/terms" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
                 Terms
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+              </Link>
+              <Link href="/contact" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
                 Contact
-              </a>
+              </Link>
+              <Link href="/community" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                Community
+              </Link>
+              <Link href="/pricing" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                Pricing
+              </Link>
             </div>
           </div>
         </div>
