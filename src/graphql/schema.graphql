@@ -1,0 +1,153 @@
+"""
+LLMastery API Schema
+This schema defines the GraphQL API for the LLMastery learning platform.
+"""
+
+# User type for managing user accounts
+type User {
+  id: ID!
+  email: String!
+  username: String
+  createdAt: String!
+  updatedAt: String!
+  profilePicture: String
+  streak: Int!
+  points: Int!
+  rank: String!
+  lessonsCompleted: Int!
+  badges: [Badge!]!
+}
+
+# Badge type for gamification
+type Badge {
+  id: ID!
+  name: String!
+  description: String!
+  imageUrl: String!
+  earnedAt: String
+}
+
+# Lesson type for educational content
+type Lesson {
+  id: ID!
+  title: String!
+  description: String!
+  content: String!
+  level: LessonLevel!
+  category: LessonCategory!
+  duration: Int! # in minutes
+  points: Int!
+  xpReward: Int!
+  quizzes: [Quiz!]!
+  challenges: [Challenge!]!
+  nextLessonId: ID
+  previousLessonId: ID
+  createdAt: String!
+  updatedAt: String!
+}
+
+# Quiz type for knowledge assessment
+type Quiz {
+  id: ID!
+  question: String!
+  options: [String!]!
+  correctAnswerIndex: Int!
+  explanation: String
+}
+
+# Challenge type for practical exercises
+type Challenge {
+  id: ID!
+  prompt: String!
+  example: String
+  pointValue: Int!
+}
+
+# Progress tracking for user lessons
+type LessonProgress {
+  id: ID!
+  userId: ID!
+  lessonId: ID!
+  completed: Boolean!
+  quizScore: Float
+  challengeCompleted: Boolean
+  startedAt: String!
+  completedAt: String
+}
+
+# Enum for lesson difficulty levels
+enum LessonLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+# Enum for lesson categories
+enum LessonCategory {
+  FUNDAMENTALS
+  ARCHITECTURE
+  PROMPTING
+  TRAINING
+  EVALUATION
+  APPLICATIONS
+  ETHICS
+}
+
+# User leaderboard entry
+type LeaderboardEntry {
+  userId: ID!
+  username: String!
+  profilePicture: String
+  rank: String!
+  points: Int!
+  lessonsCompleted: Int!
+}
+
+# Queries
+type Query {
+  # User queries
+  me: User
+  user(id: ID!): User
+  
+  # Lesson queries
+  lessons(
+    category: LessonCategory, 
+    level: LessonLevel,
+    limit: Int, 
+    offset: Int
+  ): [Lesson!]!
+  lesson(id: ID!): Lesson
+  
+  # User progress queries
+  myLessonProgress: [LessonProgress!]!
+  lessonProgress(lessonId: ID!): LessonProgress
+  
+  # Leaderboard queries
+  weeklyLeaderboard(limit: Int): [LeaderboardEntry!]!
+  allTimeLeaderboard(limit: Int): [LeaderboardEntry!]!
+  
+  # Badge queries
+  myBadges: [Badge!]!
+}
+
+# Mutations
+type Mutation {
+  # Lesson progress mutations
+  startLesson(lessonId: ID!): LessonProgress!
+  completeLesson(
+    lessonId: ID!,
+    quizAnswers: [Int!],
+    challengeAnswer: String
+  ): LessonProgress!
+  
+  # User profile mutations
+  updateProfile(username: String, profilePicture: String): User!
+}
+
+# Subscriptions
+type Subscription {
+  # Real-time notifications
+  badgeEarned: Badge!
+  leaderboardUpdated: Boolean!
+}
