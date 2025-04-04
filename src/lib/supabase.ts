@@ -139,7 +139,7 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
 }
 
 // Subscription functions
-export async function getUserSubscription(userId: string): Promise<any | null> {
+export async function getUserSubscription(userId: string): Promise<unknown | null> {
   const { data, error } = await supabase
     .from('user_subscriptions')
     .select(`
@@ -303,8 +303,6 @@ export async function completeLesson(
       .eq('lesson_id', lessonId)
       .single();
       
-    let progressId;
-    
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error(`Error checking existing progress for lesson ${lessonId}:`, fetchError);
       return false;
@@ -334,8 +332,6 @@ export async function completeLesson(
         console.error(`Error updating lesson progress for ${lessonId}:`, updateError);
         return false;
       }
-      
-      progressId = existingProgress.id;
     } else {
       // Create new completed progress entry
       const { data: newProgress, error: insertError } = await supabase
@@ -360,8 +356,6 @@ export async function completeLesson(
         console.error(`Error creating lesson progress for ${lessonId}:`, insertError);
         return false;
       }
-      
-      progressId = newProgress[0].id;
     }
     
     // Add points to user's profile
@@ -448,53 +442,7 @@ export async function markLessonCompleted(
   });
 }
 
-// Points and rewards
-export async function addPointsToUser(userId: string, points: number): Promise<UserProfile | null> {
-  const { data, error } = await supabase.rpc('increment_user_points', {
-    user_id: userId,
-    points_to_add: points
-  });
-  
-  if (error) {
-    console.error(`Error adding ${points} points to user ${userId}:`, error);
-    return null;
-  }
-  
-  // Get updated user profile
-  return await getUserProfile(userId);
-}
 
-// Function to update user streak (should be called daily)
-export async function updateUserStreak(userId: string): Promise<UserProfile | null> {
-  // Get current user profile
-  const profile = await getUserProfile(userId);
-  if (!profile) return null;
-  
-  const lastUpdated = new Date(profile.streak_last_updated);
-  const now = new Date();
-  
-  // Calculate the difference in days
-  const diffTime = Math.abs(now.getTime() - lastUpdated.getTime());
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-  let newStreak = profile.streak;
-  
-  // If it's been exactly 1 day since last update, increment streak
-  if (diffDays === 1) {
-    newStreak += 1;
-  } 
-  // If it's been more than 1 day, reset streak to 1
-  else if (diffDays > 1) {
-    newStreak = 1;
-  }
-  // If it's the same day, keep the streak as is
-  
-  // Update the streak
-  return await updateUserProfile(userId, {
-    streak: newStreak,
-    streak_last_updated: now.toISOString()
-  });
-}
 
 // Helper functions for user points and streak management
 

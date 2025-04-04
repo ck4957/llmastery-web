@@ -301,22 +301,8 @@ export interface Database {
         ]
       }
     }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      increment_user_points: {
-        Args: {
-          user_id: string
-          points_to_add: number
-        }
-        Returns: undefined
-      }
-      update_timestamp: {
-        Args: Record<PropertyKey, never>
-        Returns: unknown
-      }
-    }
+    Views: Record<string, unknown>
+    Functions: Record<string, unknown>
     Enums: {
       lesson_category: "FUNDAMENTALS" | "ARCHITECTURE" | "PROMPTING" | "TRAINING" | "EVALUATION" | "APPLICATIONS" | "ETHICS"
       lesson_level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT"
@@ -566,7 +552,7 @@ export interface Database {
         Update: Partial<Omit<UserSubscription, 'id' | 'created_at' | 'updated_at'>>;
       };
     };
-    Views: {};
-    Functions: {};
+    Views: Record<string, unknown>
+    Functions: Record<string, unknown>
   };
 }

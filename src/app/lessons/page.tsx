@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { getLessons, getUserLessonProgress } from '@/lib/supabase';
 import { Lesson, LessonProgress } from '@/types/supabase';
 
 export default function LessonsPage() {
-  const router = useRouter();
   const { user } = useAuth();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [lessonProgress, setLessonProgress] = useState<Record<string, LessonProgress>>({});

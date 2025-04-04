@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Member {
   id: string;
@@ -78,7 +79,7 @@ const CommunityGroupCard = ({
               {members.slice(0, 3).map((member) => (
                 <div key={member.id} className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-800 bg-gray-200 dark:bg-gray-600 overflow-hidden">
                   {member.avatar ? (
-                    <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                    <Image src={member.avatar} alt={member.name} width={28} height={28} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
                       {member.name.substring(0, 2).toUpperCase()}

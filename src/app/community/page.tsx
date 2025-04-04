@@ -5,7 +5,7 @@ import InfoPageLayout from "@/components/shared/InfoPageLayout";
 import CommunityGroupGrid from '@/components/shared/CommunityGroupGrid';
 
 export default function CommunityPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   
   // Mock data for community groups
   const communityGroups = [

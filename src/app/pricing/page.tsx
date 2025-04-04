@@ -236,7 +236,7 @@ export default function PricingPage() {
   return (
     <InfoPageLayout 
       title="Pricing Plans" 
-      description="Choose the plan that's right for you"
+      description="Choose the plan that&apos;s right for you"
     >
       {!showCheckout ? (
         <div className="space-y-12">
@@ -332,7 +332,7 @@ export default function PricingPage() {
           <div className="border-t border-gray-200 dark:border-gray-700 pt-12">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">Credit Packages</h2>
             <p className="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
-              Don't want to commit to a subscription? Purchase credits to access individual premium lessons and features.
+              Don&apos;t want to commit to a subscription? Purchase credits to access individual premium lessons and features.
             </p>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -416,7 +416,7 @@ export default function PricingPage() {
             
             <div className="mt-12 text-center">
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                Have more questions? We're here to help.
+                Have more questions? We&apos;re here to help.
               </p>
               <Link href="/contact"
                 className="mt-4 inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
